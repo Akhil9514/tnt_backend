@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 
@@ -64,7 +65,15 @@ class Destination(models.Model):
 
 
 class TournTrips(models.Model):
-    # Traveler details
+
+    # NEW: Image field for tour cover/thumbnail
+    image = models.ImageField(
+        upload_to='tours/',
+        null=True,
+        blank=True,
+        verbose_name="Tour Image",
+        help_text="Upload a cover image for the tour (optional)",
+    )
     title = models.CharField(max_length=255)
     country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='tours')  # Changed to ForeignKey for dropdown in admin
     duration = models.CharField(max_length=32)
@@ -81,10 +90,12 @@ class TournTrips(models.Model):
         verbose_name="Nights",
         help_text="Number of nights (0 if unknown)",
     )
-    rating = models.PositiveSmallIntegerField(
-        choices=[(i, f"{i} Star") for i in range(1, 6)],
-        help_text="Preferred hotel star rating",
-    )
+    rating = models.DecimalField(
+            max_digits=3,
+            decimal_places=1,
+            validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
+            help_text="Preferred hotel star rating (e.g., 4.9)",
+        )
     no_of_reviews = models.PositiveIntegerField(default=0)
     destinations = models.ManyToManyField(Destination, related_name='tours')  # Changed to ManyToMany for multi-select in admin
     shadow_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-839yjp%olo^itcxfyq81gw#r2)_an&4gab1p!^4s%4ws+syroa
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -212,32 +212,34 @@ CELERY_TIMEZONE = 'UTC'  # Or your timezone, e.g., 'Asia/Kolkata'
 
 
 
+# ----------------------------------------------------------------------
+# 3. CORS SETTINGS – explicit origins (recommended for prod)
+# ----------------------------------------------------------------------
+CORS_ALLOW_ALL_ORIGINS = True          # ← Turn OFF the wildcard
 
-
-# CORS settings
 # CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  # e.g., React dev server
+#     "https://tossandtrips.web.app",    # Your live front-end
+#     "http://localhost:3000",           # Local dev (React/Vue/etc.)
 #     "http://127.0.0.1:3000",
-#     "https://yourdomain.com",  # Production frontend
 # ]
 
-# For development: Allow all origins (NOT for production!)
-CORS_ALLOW_ALL_ORIGINS = True
-
-# Optional: Allow credentials (e.g., for auth cookies)
+# If you need cookies / auth headers:
 CORS_ALLOW_CREDENTIALS = True
 
-# Optional: Allow specific methods/headers
-CORS_ALLOWED_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
+# ----------------------------------------------------------------------
+# 4. CSRF TRUSTED ORIGINS – needed for POST/PUT/DELETE over HTTPS
+# # ----------------------------------------------------------------------
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://*.tunnelmole.net",        # All Tunnelmole sub-domains
+#     "https://tossandtrips.web.app",
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
 
-CORS_ALLOWED_HEADERS = [
+
+
+# Optional: Debug headers
+CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
     "authorization",
@@ -248,6 +250,14 @@ CORS_ALLOWED_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+
+# ----------------------------------------------------------------------
+# 5. (Optional) ALLOWED_HOSTS – you already have '*' for dev
+# ----------------------------------------------------------------------
+ALLOWED_HOSTS = ['*']   # fine for local / tunnelmole; tighten in prod
+
+
 
 
 

@@ -1,8 +1,11 @@
 # views.py
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly  # Adjust as needed (e.g., AllowAny for public)
-from .models import Traveller, Visiting
-from .serializers import TravellerSerializer, VisitingSerializer
+from .models import Traveller, Visiting, ContactMessage
+from .serializers import TravellerSerializer, VisitingSerializer, ContactMessageSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 
 class TravellerListCreateView(generics.ListCreateAPIView):
     """
@@ -40,3 +43,33 @@ class VisitingDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Visiting.objects.select_related('traveller', 'tour')
     serializer_class = VisitingSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+
+
+
+
+class ContactMessageCreateView(generics.CreateAPIView):
+    """
+    API view to handle 'Get in Touch' form submissions.
+    Allows anonymous POST requests to create a new contact message.
+    """
+    queryset = ContactMessage.objects.all()
+    serializer_class = ContactMessageSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'message': 'Thank you for your message! We will get back to you soon.',
+                    'data': serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {'errors': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )

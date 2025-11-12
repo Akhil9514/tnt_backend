@@ -1,0 +1,3 @@
+insall -g tunnelmole
+tmole 8000
+

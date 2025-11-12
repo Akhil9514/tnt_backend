@@ -1,8 +1,8 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Traveller, TravellerCount, Visiting
+from .models import Traveller, TravellerCount, Visiting, ContactMessage
 from toursntrips.models import TournTrips  # Assuming TournTrips is in toursntrips app
-
+from django.utils.html import strip_tags  
 class TravellerCountSerializer(serializers.ModelSerializer):
     class Meta:
         model = TravellerCount
@@ -68,3 +68,31 @@ class VisitingSerializer(serializers.ModelSerializer):
 
         validated_data['notes'] = notes
         return super().create(validated_data)
+
+
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = ['full_name', 'email', 'subject', 'message']
+        read_only_fields = ['created_at']
+    
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        return value
+    
+    def validate(self, data):
+        if len(data.get('message', '').strip()) < 10:
+            raise serializers.ValidationError("Message must be at least 10 characters long.")
+        return data
+    
+    def to_internal_value(self, data):
+        # Sanitize inputs: strip HTML tags and trim
+        sanitized_data = {}
+        for field, value in data.items():
+            if isinstance(value, str):
+                sanitized_data[field] = strip_tags(value).strip()
+            else:
+                sanitized_data[field] = value
+        return super().to_internal_value(sanitized_data)

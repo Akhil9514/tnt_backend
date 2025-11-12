@@ -36,7 +36,7 @@ class CountryAdmin(admin.ModelAdmin):
 
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'country', 'description_preview']
+    list_display = ['id','name', 'country', 'description_preview']
     list_filter = ['country', 'country__continent']
     search_fields = ['name', 'description', 'country__name', 'city']
     ordering = ['name']
@@ -84,239 +84,6 @@ class AdventureStyleAdmin(admin.ModelAdmin):
 
 
 
-# from django import forms
-# from django.contrib import admin
-# from django.urls import path
-# from django.http import JsonResponse
-# from .models import TournTrips, Destination  # Assuming imports
-
-
-
-
-# class TournTripsAdminForm(forms.ModelForm):
-#     class Meta:
-#         model = TournTrips
-#         fields = '__all__'
-#         widgets = {
-#             'destinations': forms.SelectMultiple(attrs={'id': 'id_destinations', 'size': 10, 'class': 'vLargeTextField'}),
-#             'start_city': forms.Select(attrs={'id': 'id_start_city'}),  # Dropdown, populated by JS
-#             'end_city': forms.Select(attrs={'id': 'id_end_city'}),  # Dropdown, populated by JS
-#         }
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Default choices with placeholder for both add and edit
-#         self.fields['start_city'].choices = [('', '---------')]
-#         self.fields['end_city'].choices = [('', '---------')]
-#         # For adds: All() so JS PKs validate; JS hides irrelevant via empty()/append
-#         # For edits: Pre-filter to instance's country
-#         if not self.instance.pk:
-#             self.fields['destinations'].queryset = Destination.objects.all()
-#         else:
-#             country = self.instance.country
-#             if country:
-#                 self.fields['destinations'].queryset = Destination.objects.filter(country=country)
-#             # Pre-populate city choices from instance's destinations for initial display/selection
-#             destinations = self.instance.destinations.all()
-#             possible_cities = sorted(set(d.city for d in destinations if d.city))
-#             self.fields['start_city'].choices = [('', '---------')] + [(city, city) for city in possible_cities]
-#             self.fields['end_city'].choices = [('', '---------')] + [(city, city) for city in possible_cities]
-
-
-#         # ----- NEW: split stored duration into days / nights -----
-#         if self.instance.pk and self.instance.duration:
-#             try:
-#                 nights_str, days_str = self.instance.duration.split(" nights ")
-#                 days_str, _ = days_str.split(" days")
-#                 self.initial['_days']   = int(days_str)
-#                 self.initial['_nights'] = int(nights_str)
-#             except Exception:
-#                 # malformed string → start with zeros
-#                 self.initial['_days']   = 0
-#                 self.initial['_nights'] = 0
-#         else:
-#             self.initial['_days']   = 0
-#             self.initial['_nights'] = 0
-
-#     def clean_destinations(self):
-#         country = self.cleaned_data.get('country')
-#         destinations = self.cleaned_data.get('destinations')  # Already validated objects from to_python()
-#         if not country:
-#             if destinations:
-#                 raise forms.ValidationError("Please select a country before choosing destinations.")
-#             return destinations  # Or [] if required=False
-#         # Enforce: All selected must belong to country (prevents tampering)
-#         invalid_dests = [d for d in destinations if d.country != country]
-#         if invalid_dests:
-#             valid_names = [d.name for d in Destination.objects.filter(country=country).order_by('name')[:5]]
-#             error_msg = f"Destinations must be in {country.name}. Invalid: {[d.name for d in invalid_dests]}. Valid: {', '.join(valid_names)}"
-#             if Destination.objects.filter(country=country).count() > 5:
-#                 error_msg += "..."
-#             raise forms.ValidationError(error_msg)
-#         return destinations
-    
-#     def clean_start_city(self):
-#         start_city = self.cleaned_data.get('start_city')
-#         destinations = self.cleaned_data.get('destinations')
-#         country = self.cleaned_data.get('country')
-#         if start_city and country:
-#             # Align: Must match a destination's city (string exact match)
-#             possible_cities = [d.city for d in destinations] if destinations else []
-#             if start_city not in possible_cities:
-#                 error_msg = f"Start city '{start_city}' must match a selected destination's city. Possible: {', '.join(set(possible_cities)) or 'None'}"
-#                 raise forms.ValidationError(error_msg)
-#         return start_city
-    
-#     def clean_end_city(self):
-#         end_city = self.cleaned_data.get('end_city')
-#         destinations = self.cleaned_data.get('destinations')
-#         country = self.cleaned_data.get('country')
-#         if end_city and country:
-#             # Align: Must match a destination's city (string exact match)
-#             possible_cities = [d.city for d in destinations] if destinations else []
-#             if end_city not in possible_cities:
-#                 error_msg = f"End city '{end_city}' must match a selected destination's city. Possible: {', '.join(set(possible_cities)) or 'None'}"
-#                 raise forms.ValidationError(error_msg)
-#         return end_city
-   
-
-
-
-
-
-
-
-
-
-
-
-
-# @admin.register(TournTrips)
-# class TournTripsAdmin(admin.ModelAdmin):
-#     form = TournTripsAdminForm
-
-#     list_display = [
-#         'title', 'country', 'adventure_styles',
-#         'duration_display',               # ← NEW
-#         'rating', 'no_of_reviews',
-#         'departure_date_us',              # ← US format column
-#         'shadow_price',
-#         'get_destinations_preview',
-#         'start_city', 'end_city',
-#     ]
-
-#     list_editable = ['rating', 'no_of_reviews']      # duration is now read-only
-
-#     readonly_fields = ['duration', 'current_start_city', 'current_end_city']
-
-#     fieldsets = (
-#         (None, {
-#             'fields': (
-#                 'title', 'country', 'adventure_styles',
-#                 'departure_date', 'shadow_price', 'discount_percentage',
-#                 'rating', 'no_of_reviews',
-#             )
-#         }),
-
-#         ('Duration (edit days / nights → auto-saved as string)', {
-#             'fields': ('_days', '_nights'),      # ← NEW fields
-#             'description': 'Enter numbers → saved as “X nights Y days” in the “duration” column.',
-#         }),
-
-#         ('Update Cities (based on selected destinations)', {
-#             'fields': ('destinations', 'start_city', 'end_city'),
-#             'classes': ('wide',),
-#         }),
-
-#         ('Current Saved Values', {
-#             'fields': ('duration', 'current_start_city', 'current_end_city'),
-#             'classes': ('wide',),
-#         }),
-#     )
-
-#     # ------------------------------------------------------------------
-#     # US-format column (already defined in the model as a property)
-#     # ------------------------------------------------------------------
-#     def departure_date_us(self, obj):
-#         return obj.departure_date_us
-#     departure_date_us.short_description = 'Departure (MM/DD/YYYY)'
-#     departure_date_us.admin_order_field = 'departure_date'
-
-#     # ------------------------------------------------------------------
-#     # Nice duration column (uses the property)
-#     # ------------------------------------------------------------------
-#     def duration_display(self, obj):
-#         return obj.duration_display
-#     duration_display.short_description = 'Duration'
-
-#     def current_start_city(self, obj):
-#         return obj.start_city or 'Not set'
-#     current_start_city.short_description = 'Saved Start City'
-
-#     def current_end_city(self, obj):
-#         return obj.end_city or 'Not set'
-#     current_end_city.short_description = 'Saved End City'
-
-#     def get_urls(self):
-#         urls = super().get_urls()
-#         custom_urls = [
-#             path('ajax/destinations/', self.ajax_destinations_view, name='tourn_trips_ajax_destinations'),
-#             path('ajax/possible-cities/', self.ajax_possible_cities_view, name='tourn_trips_ajax_possible_cities'),
-#         ]
-#         return custom_urls + urls
-
-#     def ajax_destinations_view(self, request):
-#         if request.method == 'GET':
-#             country_id = request.GET.get('country_id')
-#             if country_id:
-#                 destinations = Destination.objects.filter(country_id=country_id).values('id', 'name')
-#                 data = list(destinations)
-#             else:
-#                 data = []
-#             return JsonResponse(data, safe=False)
-#         return JsonResponse({'error': 'Invalid request'}, status=400)
-
-#     def ajax_possible_cities_view(self, request):
-#         if request.method == 'GET':
-#             dest_ids = request.GET.getlist('dest_ids')  # From multi-select
-#             if dest_ids:
-#                 destinations = Destination.objects.filter(id__in=dest_ids)
-#                 possible_cities = list(set(destinations.values_list('city', flat=True)))  # Unique city names
-#                 # Format for JS: [{'id': city, 'name': city}] for option value/text
-#                 data = [{'id': city, 'name': city} for city in possible_cities if city]
-#             else:
-#                 data = []
-#             return JsonResponse(data, safe=False)
-#         return JsonResponse({'error': 'Invalid request'}, status=400)
-
-#     def get_destinations_preview(self, obj):
-#         if obj.destinations.exists():
-#             names = [d.name for d in obj.destinations.all()[:3]]
-#             preview = ', '.join(names)
-#             if len(obj.destinations.all()) > 3:
-#                 preview += '...'
-#             return preview
-#         return 'No destinations'
-#     get_destinations_preview.short_description = 'Destinations Preview'
-
-#     class Media:
-#         js = (
-#             'toursntrips/admin/js/chained_destinations.js',
-#             'toursntrips/admin/js/chained_cities_dropdown.js', 
-#             'toursntrips/admin/js/update_cities_live.js'
-#         )
-
-#     def change_view(self, request, object_id, form_url='', extra_context=None):
-#         extra_context = extra_context or {}
-#         return super().change_view(request, object_id, form_url, extra_context=extra_context)
-
-
-        
-
-
-
-
-
-
 
 
 
@@ -330,9 +97,6 @@ from django.http import JsonResponse
 from django.utils.safestring import mark_safe
 from django import forms
 from .models import TournTrips, Destination, Country  # Assuming imports
-
-
-
 
 class TournTripsAdminForm(forms.ModelForm):
     start_city = forms.MultipleChoiceField(
@@ -351,6 +115,13 @@ class TournTripsAdminForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'destinations': forms.CheckboxSelectMultiple(attrs={'class': 'destinations-checkboxes'}),
+            # OPTIONAL: Custom widget for rating to emphasize decimal input
+            'rating': forms.NumberInput(attrs={
+                'step': '0.1',  # Allows decimal increments (e.g., 4.9)
+                'min': '1.0',
+                'max': '5.0',
+                'placeholder': 'e.g., 4.9',
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -451,22 +222,12 @@ class TournTripsAdminForm(forms.ModelForm):
             self.save_m2m()
         return instance
 
-
-
-
-
-
-
-
-
-
-
-
 @admin.register(TournTrips)
 class TournTripsAdmin(admin.ModelAdmin):
     form = TournTripsAdminForm
 
     list_display = [
+        'image_tag',  # NEW: Thumbnail in list view
         'title', 'country', 'adventure_styles',
         'duration_display',               # ← NEW
         'rating', 'no_of_reviews',
@@ -483,6 +244,7 @@ class TournTripsAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': (
+                'image',  # NEW: Image field in edit form
                 'title', 'country', 'adventure_styles',
                 'departure_date', 'shadow_price', 'discount_percentage',
                 'rating', 'no_of_reviews',
@@ -490,7 +252,7 @@ class TournTripsAdmin(admin.ModelAdmin):
         }),
 
         ('Duration (edit days / nights → auto-saved as string)', {
-            'fields': ('_days', '_nights'),      # ← NEW fields
+            'fields': ('_nights','_days'),      # ← NEW fields
             'description': 'Enter numbers → saved as “X nights Y days” in the “duration” column.',
         }),
 
@@ -504,6 +266,15 @@ class TournTripsAdmin(admin.ModelAdmin):
             'classes': ('wide',),
         }),
     )
+
+    # ------------------------------------------------------------------
+    # NEW: Image thumbnail in list display
+    # ------------------------------------------------------------------
+    def image_tag(self, obj):
+        if obj.image:
+            return mark_safe('<img src="%s" style="max-height: 50px; max-width: 50px; object-fit: cover;" />' % obj.image.url)
+        return "No Image"
+    image_tag.short_description = 'Image'
 
     # ------------------------------------------------------------------
     # US-format column (already defined in the model as a property)
@@ -567,7 +338,6 @@ class TournTripsAdmin(admin.ModelAdmin):
             html = widget.render(field_name, [])
             return JsonResponse({'html': mark_safe(html)})
         return JsonResponse({'error': 'Invalid request'}, status=400)
-
 
     def get_destinations_preview(self, obj):
         if obj.destinations.exists():

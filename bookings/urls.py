@@ -12,4 +12,6 @@ urlpatterns = [
     # Visiting/Booking URLs
     path('visiting/', views.VisitingListCreateView.as_view(), name='visiting-list-create'),
     path('visits/<int:pk>/', views.VisitingDetailView.as_view(), name='visiting-detail'),
+
+    path('contact/', views.ContactMessageCreateView.as_view(), name='contact-create'),
 ]

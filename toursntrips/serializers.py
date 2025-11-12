@@ -49,6 +49,9 @@ class TournTripsSerializer(serializers.ModelSerializer):
     departure_date_us = serializers.CharField(read_only=True)
     duration_display = serializers.CharField(read_only=True)
 
+    # NEW: Image field with absolute URL (requires request in serializer context)
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = TournTrips
         fields = [
@@ -56,6 +59,7 @@ class TournTripsSerializer(serializers.ModelSerializer):
             'duration', 'duration_display', '_days', '_nights',
             'rating', 'no_of_reviews',
             'destinations',
+            'image',
             'shadow_price', 'discount_percentage',
             'departure_date', 'departure_date_us',
             'adventure_style',
@@ -64,6 +68,18 @@ class TournTripsSerializer(serializers.ModelSerializer):
 
     def get_destinations(self, obj):
         return list(obj.destinations.values_list('name', flat=True))
+    
+    # NEW: Method to return absolute image URL (e.g., http://127.0.0.1:8000/media/tours/filename.jpg)
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            if request:
+                # Build full absolute URL using request (recommended for API responses)
+                return request.build_absolute_uri(obj.image.url)
+            else:
+                # Fallback to relative URL if no request context
+                return obj.image.url
+        return None  # No image uploaded
 
 
 class CitySerializer(serializers.Serializer):

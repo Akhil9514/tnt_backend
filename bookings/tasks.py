@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
 from email.mime.image import MIMEImage
-from .models import Visiting
+from .models import ContactMessage, Visiting
 import os
 
 logger = logging.getLogger(__name__)  # Logs to Celery worker console
@@ -105,17 +105,25 @@ def send_booking_confirmation_email_task(self, visiting_id):
         )
         email.attach_alternative(html_content, "text/html")
 
+
         # Logo embed
-        logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo.png')
+        logo_path = os.path.join(settings.MEDIA_ROOT, 'logo', 'logo-new.png')
+        logo_embedded = False
+
         if os.path.isfile(logo_path):
             with open(logo_path, 'rb') as img:
                 logo_image = MIMEImage(img.read())
                 logo_image.add_header('Content-ID', '<logo>')
+                logo_image.add_header('Content-Disposition', 'inline', filename='Toss and Trips.png')  # Critical!
                 email.attach(logo_image)
-            logger.info(f"[{task_id}] Logo EMBEDDED from {logo_path}")
+            logger.info(f"[{task_id}] Logo EMBEDDED (inline) from {logo_path}")
+            logo_embedded = True
         else:
             logger.warning(f"[{task_id}] Logo MISSING at {logo_path} (skipping)")
 
+        context['logo_embedded'] = logo_embedded
+
+       
         # Send!
         logger.info(f"[{task_id}] Attempting to SEND email...")
         email.send(fail_silently=False)  # Explicit: raises on failure
@@ -130,4 +138,68 @@ def send_booking_confirmation_email_task(self, visiting_id):
         # Retry logic
         retry_countdown = 60 * (2 ** self.request.retries)
         logger.info(f"[{task_id}] RETRYING in {retry_countdown}s (attempt {self.request.retries + 1}/3)")
+        raise self.retry(exc=exc, countdown=retry_countdown)
+    
+
+
+
+
+@shared_task(bind=True, max_retries=3)
+def send_contact_thankyou_email_task(self, contact_id):
+    task_id = self.request.id
+    logger.info(f"[{task_id}] Contact Thank-You Task STARTED for ID: {contact_id}")
+
+    try:
+        contact = ContactMessage.objects.get(id=contact_id)
+        logger.info(f"[{task_id}] Contact LOADED: {contact.full_name} <{contact.email}>")
+
+        host_email = getattr(settings, 'HOST_EMAIL', 'vibhakarakhil@gmail.com')
+        context = {
+            'full_name': contact.full_name,
+            'subject': contact.subject,
+            'company_url': 'https://tossntrips.com',
+        }
+
+        # Render
+        html_content = render_to_string('bookings/contact_thankyou_email.html', context)
+        text_content = strip_tags(html_content)
+
+        # Email setup
+        subject = f"Thank You for Contacting Toss & Trips – {contact.subject}"
+        from_email = settings.DEFAULT_FROM_EMAIL or 'noreply@tossntrips.com'
+        to = [contact.email]
+        cc = [host_email] if host_email else []
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=from_email,
+            to=to,
+            cc=cc,
+        )
+        email.attach_alternative(html_content, "text/html")
+
+        # Optional: embed logo (same as booking)
+        logo_path = os.path.join(settings.MEDIA_ROOT, 'logo', 'logo-new.png')
+        if os.path.isfile(logo_path):
+            with open(logo_path, 'rb') as img:
+                logo_img = MIMEImage(img.read())
+                logo_img.add_header('Content-ID', '<logo>')
+                logo_img.add_header('Content-Disposition', 'inline', filename='Toss and Trips.png')
+                email.attach(logo_img)
+            logger.info(f"[{task_id}] Logo EMBEDDED (inline) from {logo_path}")
+
+        # Send
+        logger.info(f"[{task_id}] Sending thank-you email to {contact.email}")
+        email.send(fail_silently=False)
+        logger.info(f"[{task_id}] Thank-you email SENT to {contact.email}")
+        return f"Thank-you email sent to {contact.email}"
+
+    except ContactMessage.DoesNotExist:
+        logger.error(f"[{task_id}] Contact ID {contact_id} not found")
+        return "Contact not found"
+    except Exception as exc:
+        logger.error(f"[{task_id}] ERROR: {exc}", exc_info=True)
+        retry_countdown = 60 * (2 ** self.request.retries)
+        logger.info(f"[{task_id}] RETRY in {retry_countdown}s (attempt {self.request.retries + 1}/3)")
         raise self.retry(exc=exc, countdown=retry_countdown)

@@ -1,124 +1,283 @@
-<!-- templates/bookings/booking_confirmation_email.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Confirmation - Toss & Trips</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 640px; margin: 0 auto; background-color: #ffffff; padding: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%); text-align: center; padding: 30px 20px; border-radius: 12px 12px 0 0; }
-        .logo-img { max-height: 100px; width: auto; display: block; margin: 0 auto 15px; }
-        .tagline { font-size: 1.5em; color: white; margin: 0; font-weight: bold; }
-        .subtag { font-size: 1.1em; color: rgba(255,255,255,0.9); margin: 8px 0 0; }
-        .content { padding: 30px 25px; }
-        .greeting { font-size: 1.5em; color: #1e3a8a; margin-bottom: 20px; }
-        .intro { font-size: 1.1em; margin-bottom: 30px; }
-        .section { margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 5px solid #dc2626; }
-        .section-title { color: #dc2626; font-size: 1.3em; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; }
-        .detail { padding: 10px 0; border-bottom: 1px dashed #ddd; display: flex; flex-wrap: wrap; }
-        .detail:last-child { border-bottom: none; }
-        .label { font-weight: bold; color: #1e3a8a; width: 180px; flex: 0 0 180px; }
-        .value { flex: 1; color: #333; }
-        .price-final { font-size: 1.3em; color: #dc2626; font-weight: bold; }
-        .cta { text-align: center; margin: 35px 0; }
-        .cta-button { background: linear-gradient(135deg, #dc2626 0%, #1e3a8a 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .footer { background-color: #1e3a8a; color: white; text-align: center; padding: 20px; border-radius: 0 0 12px 12px; font-size: 0.9em; }
-        .footer a { color: #dc2626; text-decoration: none; font-weight: bold; }
-        @media (max-width: 600px) {
-            .label { width: 100%; flex: none; margin-bottom: 5px; }
-            .value { padding-left: 10px; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Toss & Trips - Booking Confirmed</title>
+  <style>
+    /* Reset & Base */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    p { display: block; margin: 0; padding: 0; }
+    body { margin: 0; padding: 0; background-color: #f3f4f6; font-family: Arial, sans-serif; }
+
+    /* Container */
+    .email-wrapper { width: 100%; table-layout: fixed; background-color: #f3f4f6; padding: 20px 0; }
+    .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* Header */
+    .header { background-color: #d9e3f4ff; color: white; padding: 16px 24px; }
+    .header img { height: 40px; display: block; }
+
+    /* Hero */
+    .hero { text-align: center; padding: 32px 24px; background-color: #f8fafc; }
+    .hero h1 { font-size: 28px; color: #dc2626; margin: 0 0 16px; font-weight: bold; }
+    .hero p { font-size: 16px; color: #374151; line-height: 1.5; margin: 0 0 8px; }
+
+    /* Section */
+    .section { padding: 24px; border-bottom: 1px solid #e2e8f0; }
+    .section-title { text-align: center; font-size: 20px; color: #1e293b; margin: 0 0 16px; position: relative; font-weight: bold; }
+    .section-title::after { content: ''; display: block; width: 60px; height: 3px; background: #2563eb; margin: 8px auto 0; border-radius: 2px; }
+
+    /* Info Grid */
+    .info-grid { display: table; width: 100%; }
+    .info-row { display: table-row; }
+    .info-label, .info-value { display: table-cell; padding: 6px 0; font-size: 14px; color: #374151; }
+    .info-label { font-weight: bold; width: 40%; padding-right: 12px; }
+    .info-value { width: 60%; }
+
+    /* Image Right */
+    .image-right { float: right; width: 40%; max-width: 200px; margin-left: 16px; margin-bottom: 16px; border-radius: 8px; }
+
+    /* Preferences Box */
+    .pref-box { background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .pref-grid { display: table; width: 100%; }
+    .pref-label, .pref-value { display: table-cell; padding: 4px 0; font-size: 14px; color: #374151; }
+    .pref-label { font-weight: bold; width: 35%; }
+
+    /* Booking Bar */
+    .booking-bar { background-color: #1e293b; color: white; padding: 16px 24px; }
+
+    /* Follow-up */
+    .follow-up { padding: 24px; text-align: center; color: #64748b; font-size: 14px; line-height: 1.6; }
+
+    /* Footer */
+    .footer { background-color: #1e293b; color: #94a3b8; text-align: center; padding: 20px 24px; font-size: 12px; }
+    .footer a { color: #f43f5e; text-decoration: none; }
+    .footer .tagline { font-style: italic; margin-top: 8px; font-size: 11px; }
+
+    /* Responsive */
+    @media screen and (max-width: 480px) {
+      .email-container { width: 100% !important; }
+      .header { padding: 12px 16px !important; text-align: center !important; }
+      .header img { margin: 0 auto 8px !important; display: block !important; }
+      .hero { padding: 24px 16px !important; }
+      .hero h1 { font-size: 24px !important; }
+      .section { padding: 16px !important; }
+      .info-label, .info-value { display: block !important; width: 100% !important; }
+      .info-label { margin-bottom: 4px !important; }
+      .image-right { float: none !important; width: 100% !important; max-width: 100% !important; margin: 16px 0 !important; display: block !important; }
+      .pref-label, .pref-value { display: block !important; width: 100% !important; }
+      .pref-label { margin-bottom: 4px !important; }
+      .booking-bar { padding: 16px !important; }
+      .booking-bar table { width: 100% !important; }
+      .booking-bar td { display: block !important; width: 100% !important; text-align: center !important; padding: 4px 0 !important; }
+      .booking-bar .btn { margin-top: 8px !important; display: inline-block !important; width: auto !important; }
+      .follow-up { padding: 16px !important; font-size: 13px !important; }
+      .footer { padding: 16px !important; font-size: 11px !important; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            {% if logo %}
-            <img src="cid:logo" alt="Toss & Trips Logo" class="logo-img">
-            {% else %}
-            <div class="tagline">Toss & Trips</div>
-            {% endif %}
-            <p class="tagline">Toss & Trips</p>
-            <p class="subtag">Tailored Made Trips</p>
-        </div>
+  <!-- Email Wrapper -->
+  <table class="email-wrapper" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+    <tr>
+      <td align="center">
+        <!-- Email Container -->
+        <table class="email-container" cellpadding="0" cellspacing="0" role="presentation" width="100%">
 
-        <div class="content">
-            <div class="greeting">Dear {{ traveller_name }},</div>
-            <p class="intro">
-                Thank you for choosing <strong>Toss & Trips</strong>! We're excited to receive your tailored adventure. 
-                Below are the complete details of your booking, including traveller information, tour specifics, and preferences.
-            </p>
+          <!-- Header -->
+          <tr>
+            <td class="header" align="center">
+              {% if logo_embedded %}
+                <img src="cid:logo" alt="Toss & Trips Logo" style="height: 40px;" />
+              {% else %}
+                <img src="https://tossandtrips.web.app/assets/images/logo/logo-new.png" alt="Toss & Trips Logo" style="height: 40px;" />
+              {% endif %}
+            </td>
+          </tr>
 
-            <!-- Traveller Information -->
-            <div class="section">
-                <div class="section-title">Traveller Information</div>
-                <div class="detail"><span class="label">Name:</span><span class="value">{{ traveller_name }}</span></div>
-                <div class="detail"><span class="label">Email:</span><span class="value">{{ traveller_email|lower }}</span></div>
-                <div class="detail"><span class="label">Phone:</span><span class="value">{{ traveller_phone }}</span></div>
-                <div class="detail"><span class="label">Nationality:</span><span class="value">{{ traveller_nationality }}</span></div>
-                <div class="detail"><span class="label">Request From:</span><span class="value">{{ request_country }}</span></div>
-            </div>
+          <!-- Hero -->
+          <tr>
+            <td class="hero">
+              <h1>Thank You for choosing <span style="color:#dc2626;">Toss & Trips</span>!</h1>
+              <p>Dear {{ traveller_name }},</p>
+              <p>Thank you for choosing Toss & Trips! We're excited to receive your tailored adventure. Below are the complete details of your booking, including traveller information, tour specifics, and preferences.</p>
+            </td>
+          </tr>
 
-            <!-- Tour Details -->
-            <div class="section">
-                <div class="section-title">Tour Details</div>
-                <div class="detail"><span class="label">Tour:</span><span class="value">{{ tour_title }}</span></div>
-                <div class="detail"><span class="label">Country:</span><span class="value">{{ tour_country }}</span></div>
-                <div class="detail"><span class="label">Adventure Style:</span><span class="value">{{ tour_adventure_style }}</span></div>
-                <div class="detail"><span class="label">Destinations:</span><span class="value">{{ tour_destinations }}</span></div>
-                <div class="detail"><span class="label">Start City:</span><span class="value">{{ tour_start_city }}</span></div>
-                <div class="detail"><span class="label">End City:</span><span class="value">{{ tour_end_city }}</span></div>
-                <div class="detail"><span class="label">Duration:</span><span class="value">{{ tour_duration }}</span></div>
-                <div class="detail"><span class="label">Departure Date:</span><span class="value">{{ tour_departure }}</span></div>
-                <div class="detail"><span class="label">Tour Rating:</span><span class="value">{{ tour_rating }}</span></div>
-            </div>
+          <!-- Traveller Information -->
+          <tr>
+            <td class="section">
+              <h2 class="section-title">Traveller Information</h2>
+              {% if traveller_image_url %}
+                <img src="{{ traveller_image_url }}" alt="Travellers" class="image-right" />
+              {% endif %}
+              <div class="info-grid">
+                <div class="info-row">
+                  <div class="info-label">Name :</div>
+                  <div class="info-value">{{ traveller_name }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Phone :</div>
+                  <div class="info-value">{{ traveller_phone }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Request From :</div>
+                  <div class="info-value">{{ request_country }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Email :</div>
+                  <div class="info-value">{{ traveller_email|lower }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Nationality :</div>
+                  <div class="info-value">{{ traveller_nationality }}</div>
+                </div>
+              </div>
+            </td>
+          </tr>
 
-            <!-- Travel Preferences -->
-            <div class="section">
-                <div class="section-title">Travel Preferences</div>
-                <div class="detail"><span class="label">Check-in:</span><span class="value">{{ check_in_date }}</span></div>
-                <div class="detail"><span class="label">Check-out:</span><span class="value">{{ check_out_date }}</span></div>
-                <div class="detail"><span class="label">Nights:</span><span class="value">{{ nights }} night{{ nights|pluralize }}</span></div>
-                <div class="detail"><span class="label">Travellers:</span><span class="value">{{ traveller_breakdown }}</span></div>
-                <div class="detail"><span class="label">Hotel Rating:</span><span class="value">{{ hotel_rating }}</span></div>
-                <div class="detail"><span class="label">Direct Flight:</span><span class="value">{{ direct_flight }}</span></div>
-                {% if notes != 'None' %}
-                <div class="detail"><span class="label">Special Requests:</span><span class="value">{{ notes }}</span></div>
-                {% endif %}
-            </div>
+          <!-- Tour Details -->
+          <tr>
+            <td class="section">
+              <h2 class="section-title">Tour Details</h2>
+              <div class="info-grid">
+                <div class="info-row">
+                  <div class="info-label">Tour :</div>
+                  <div class="info-value">{{ tour_title }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Country :</div>
+                  <div class="info-value">{{ tour_country }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Adventure Style :</div>
+                  <div class="info-value">{{ tour_adventure_style }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Destinations :</div>
+                  <div class="info-value">{{ tour_destinations }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Start City :</div>
+                  <div class="info-value">{{ tour_start_city }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">End City :</div>
+                  <div class="info-value">{{ tour_end_city }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Duration :</div>
+                  <div class="info-value">{{ tour_duration }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Departure Date :</div>
+                  <div class="info-value">{{ tour_departure }}</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Tour Rating :</div>
+                  <div class="info-value">{{ tour_rating }}</div>
+                </div>
+              </div>
+            </td>
+          </tr>
 
-            <!-- Pricing (if available) 
-            {% if has_price %}
-            <div class="section">
-                <div class="section-title">Pricing Summary</div>
-                <div class="detail"><span class="label">Original Price:</span><span class="value">{{ original_price }}</span></div>
-                <div class="detail"><span class="label">Discount:</span><span class="value">{{ discount }}</span></div>
-                <div class="detail"><span class="label">Final Price:</span><span class="value"><strong class="price-final">{{ final_price }}</strong></span></div>
-            </div>
-            {% endif %}
-             -->
+          <!-- Travel Preferences -->
+          <tr>
+            <td class="section">
+              <h2 class="section-title">Travel Preferences</h2>
+              {% if preference_image_url %}
+                <img src="{{ preference_image_url }}" alt="Travel Illustration" class="image-right" />
+              {% endif %}
+              <div class="pref-box">
+                <div class="pref-grid">
+                  <div class="pref-row">
+                    <div class="pref-label">Check-in</div>
+                    <div class="pref-value">{{ check_in_date }}</div>
+                  </div>
+                  <div class="pref-row">
+                    <div class="pref-label">Check-out</div>
+                    <div class="pref-value">{{ check_out_date }}</div>
+                  </div>
+                  <div class="pref-row">
+                    <div class="pref-label">Nights</div>
+                    <div class="pref-value">{{ nights }} night{{ nights|pluralize }}</div>
+                  </div>
+                  <div class="pref-row">
+                    <div class="pref-label">Travellers</div>
+                    <div class="pref-value">{{ traveller_breakdown }}</div>
+                  </div>
+                  <div class="pref-row">
+                    <div class="pref-label">Hotel Rating</div>
+                    <div class="pref-value">{{ hotel_rating }}</div>
+                  </div>
+                  <div class="pref-row">
+                    <div class="pref-label">Direct Flight</div>
+                    <div class="pref-value">{{ direct_flight }}</div>
+                  </div>
+                  {% if notes != 'None' and notes %}
+                  <div class="pref-row">
+                    <div class="pref-label">Special Requests</div>
+                    <div class="pref-value">{{ notes }}</div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
 
-            <!-- Booking Info -->
-            <div class="section">
-                <div class="section-title">Booking Information</div>
-                <div class="detail"><span class="label">Booked On:</span><span class="value">{{ booked_on_us }}</span></div>
-            </div>
+          <!-- Booking Bar -->
+          <tr>
+            <td class="booking-bar">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td align="left" valign="middle" style="font-size: 14px; color: white; padding: 0;">
+                    Booked On: {{ booked_on_us }}
+                  </td>
+                  <td align="right" valign "middle" style="padding: 0;">
+                    <a href="{{ company_url }}" style="
+                      background-color: #ffffff;
+                      color: #1e293b;
+                      padding: 10px 20px;
+                      border-radius: 6px;
+                      text-decoration: none;
+                      font-weight: bold;
+                      font-size: 14px;
+                      display: inline-block;
+                    ">
+                      Explore More Adventures
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-            <div class="cta">
-                <a href="{{ company_url }}" class="cta-button">Explore More Adventures</a>
-            </div>
+          <!-- Follow-up -->
+          <tr>
+            <td class="follow-up">
+              We’ll follow up within 24 hours with your detailed itinerary, payment link, and personalized recommendations.<br>
+              Questions? Just reply to this email — we’re here 24/7!
+            </td>
+          </tr>
 
-            <p>We’ll follow up within 24 hours with your detailed itinerary, payment link, and personalized recommendations.</p>
-            <p>Questions? Just reply to this email — we're here 24/7!</p>
-        </div>
+          <!-- Footer -->
+          <tr>
+            <td class="footer">
+              <p>© 2025 Toss & Trips. All rights reserved.</p>
+              <p>
+                <a href="{{ company_url }}">www.tossntrips.com</a> | 
+                <a href="mailto:support@tossntrips.com">support@tossntrips.com</a>
+              </p>
+              <p class="tagline">Tailored trips, unforgettable memories.</p>
+            </td>
+          </tr>
 
-        <div class="footer">
-            <p>&copy; 2025 Toss & Trips. All rights reserved.</p>
-            <p><a href="{{ company_url }}">www.tossntrips.com</a> | <a href="mailto:support@tossntrips.com">support@tossntrips.com</a></p>
-            <p style="font-size: 0.8em; opacity: 0.8;">Tailored trips, unforgettable memories.</p>
-        </div>
-    </div>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

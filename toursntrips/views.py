@@ -156,6 +156,11 @@ class CountryToursListView(generics.ListAPIView):
         if city_id:
             queryset = queryset.filter(destinations__id=city_id)
 
+        city_name = request.query_params.get('city_name')      # <-- NEW
+        if city_name:
+            # case-insensitive contains
+            queryset = queryset.filter(destinations__city__icontains=city_name)
+
         # Specific departure date filter
         departure_date = request.query_params.get('departure_date')
         if departure_date:
@@ -175,6 +180,17 @@ class CountryToursListView(generics.ListAPIView):
                     queryset = queryset.filter(departure_date__month=month_int)
             except ValueError:
                 # Invalid month; queryset remains unchanged
+                pass
+
+
+        adventure_style = self.request.query_params.getlist('adventure_style')
+        if adventure_style:
+            # Convert to ints, ignore invalid
+            try:
+                ids = [int(aid) for aid in adventure_style if aid.isdigit()]
+                if ids:
+                    queryset = queryset.filter(adventure_styles__id__in=ids)
+            except ValueError:
                 pass
 
         # Start and end city filters (exact match)

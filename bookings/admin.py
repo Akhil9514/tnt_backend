@@ -1,7 +1,7 @@
 # bookings/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Traveller, TravellerCount, Visiting
+from .models import Traveller, TravellerCount, Visiting, ContactMessage
 
 
 # ------------------------------------------------------------------
@@ -110,3 +110,33 @@ class VisitingAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related(
             'traveller', 'traveller__count', 'tour'
         )
+    
+
+
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    """
+    Admin configuration for ContactMessage model.
+    Displays key fields in list view and enables searching.
+    """
+    list_display = ['full_name', 'email', 'subject', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['full_name', 'email', 'subject', 'message']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    fieldsets = (
+        ('Contact Details', {
+            'fields': ('full_name', 'email')
+        }),
+        ('Message', {
+            'fields': ('subject', 'message')
+        }),
+        ('Timestamp', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
