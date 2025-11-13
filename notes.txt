@@ -1,3 +1,67 @@
 insall -g tunnelmole
 tmole 8000
 
+# Create
+sudo nano /etc/systemd/system/mybackend.app.gunicorn.socket
+sudo nano /etc/systemd/system/mybackend.app.gunicorn.service
+
+# Start
+sudo systemctl start mybackend.app.gunicorn.socket
+sudo systemctl start mybackend.app.gunicorn.service
+
+# Enable
+sudo systemctl enable mybackend.app.gunicorn.socket
+sudo systemctl enable mybackend.app.gunicorn.service
+
+# Status
+sudo systemctl status mybackend.app.gunicorn.socket
+sudo systemctl status mybackend.app.gunicorn.service
+
+
+# Restart
+sudo systemctl daemon-reload
+sudo systemctl restart mybackend.app.gunicorn
+
+
+# create nginx
+sudo nano /etc/nginx/sites-available/mybackend.app
+
+
+# Enable nginx
+sudo ln -s /etc/nginx/sites-available/mybackend.app /etc/nginx/sites-enabled/mybackend.app
+
+# chk nginx
+sudo nginx -t
+
+# restart nginx
+sudo service nginx restart
+
+
+
+
+
+
+
+# 1. Start & enable the REAL service
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
+
+# 2. Verify it's running
+sudo systemctl status redis-server
+
+# celery.service
+sudo nano /etc/systemd/system/celery.service
+
+# celerybeat.service (optional)
+sudo nano /etc/systemd/system/celerybeat.service
+
+
+
+
+sudo systemctl daemon-reload
+sudo systemctl enable celery celerybeat
+sudo systemctl start celery celerybeat
+
+# Check status
+sudo systemctl status celery
+sudo systemctl status celerybeat
