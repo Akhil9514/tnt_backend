@@ -65,3 +65,70 @@ sudo systemctl start celery celerybeat
 # Check status
 sudo systemctl status celery
 sudo systemctl status celerybeat
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################################33
+#!/bin/bash
+set -e
+
+echo "Deployment started ..."
+
+# echo "Backing up DB..."
+# cp db.sqlite3 /tmp/db.sqlite3.bak || true
+
+echo "Backing up settings.py..."
+cp core/settings.py ~/settings-backup.py || true
+
+echo "Cleaning working directory..."
+git reset --hard
+git clean -fd
+
+echo "Pulling latest changes..."
+git pull origin main
+
+# echo "Restoring DB..."
+# mv /tmp/db.sqlite3.bak db.sqlite3 || true
+
+echo "Restoring settings.py..."
+cp ~/settings-backup.py core/settings.py || true
+
+source venv/bin/activate
+echo "Virtual env 'venv' Activated !"
+
+echo "Clearing Cache..."
+find . -name "*.pyc" -delete
+python manage.py clear_cache || true
+
+echo "Installing Dependencies..."
+pip install -r requirements.txt --no-input
+
+echo "Serving Static Files..."
+python manage.py collectstatic --noinput
+
+echo "Running Database migration..."
+python manage.py makemigrations
+python manage.py 
+
+deactivate
+echo "Virtual env 'venv' Deactivated !"
+
+echo "copying media..."
+cp -r media /var/www/core/
+
+echo "Reloading App..."
+ps aux |grep gunicorn |grep core | awk '{ print $2 }' |xargs kill -HUP || true
+
+echo "Restarting daphene server"
+sudo systemctl restart daphne
+
+echo "Deployment Finished!"
