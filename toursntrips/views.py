@@ -165,8 +165,9 @@ class CountryToursListView(generics.ListAPIView):
         departure_date = request.query_params.get('departure_date')
         if departure_date:
             try:
-                date_obj = datetime.strptime(departure_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(departure_date=date_obj)
+                # date_obj = datetime.strptime(departure_date, '%Y-%m-%d').date()
+                # queryset = queryset.filter(departure_date=date_obj)
+                pass
             except ValueError:
                 # Invalid date format; queryset remains unchanged (or handle error as needed)
                 pass
