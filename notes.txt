@@ -39,6 +39,7 @@ sudo service nginx restart
 
 
 
+celery -A tnt_backend worker --loglevel=info --pool=solo
 
 
 
@@ -68,6 +69,8 @@ sudo systemctl status celerybeat
 
 
 
+git fetch --all
+git reset --hard origin/main
 
 
 

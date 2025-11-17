@@ -176,9 +176,10 @@ class CountryToursListView(generics.ListAPIView):
         month = request.query_params.get('month')
         if month:
             try:
-                month_int = int(month)
-                if 1 <= month_int <= 12:
-                    queryset = queryset.filter(departure_date__month=month_int)
+                # month_int = int(month)
+                # if 1 <= month_int <= 12:
+                #     queryset = queryset.filter(departure_date__month=month_int)
+                pass
             except ValueError:
                 # Invalid month; queryset remains unchanged
                 pass
@@ -264,3 +265,32 @@ class TourDetailView(generics.RetrieveAPIView):
     ).prefetch_related('destinations')
     serializer_class = TournTripsSerializer
     lookup_field = 'id'
+
+
+
+
+
+
+
+
+from django.http import JsonResponse
+from .models import Country
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["GET"])
+def country_by_slug(request):
+    slug = request.GET.get('slug')
+    if not slug:
+        return JsonResponse({'error': 'slug parameter is required'}, status=400)
+
+    try:
+        country = Country.objects.get(slug=slug)
+        data = {
+            'id': country.id,
+            'name': country.name,
+            'slug': country.slug,
+            # add other fields as needed
+        }
+        return JsonResponse(data)
+    except Country.DoesNotExist:
+        return JsonResponse({'error': 'Country not found'}, status=404)
