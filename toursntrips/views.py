@@ -294,3 +294,37 @@ def country_by_slug(request):
         return JsonResponse(data)
     except Country.DoesNotExist:
         return JsonResponse({'error': 'Country not found'}, status=404)
+    
+
+
+
+
+
+
+
+
+@require_http_methods(["GET"])
+def country_by_name(request):
+    name = request.GET.get('slug')  # e.g. ?name=India  or  ?name=united states
+    if not name:
+        return JsonResponse({'error': 'name parameter is required'}, status=400)
+
+    # Case-insensitive + partial match fallback (very forgiving)
+    try:
+        # First: try exact match (case-insensitive)
+        country = Country.objects.get(name__iexact=name.strip())
+    except Country.DoesNotExist:
+        try:
+            # Second: try partial match (e.g. "united" → "United States")
+            country = Country.objects.filter(name__icontains=name.strip()).first()
+            if not country:
+                raise Country.DoesNotExist()
+        except Country.DoesNotExist:
+            return JsonResponse({'error': 'Country not found'}, status=404)
+
+    return JsonResponse({
+        'id': country.id,
+        'name': country.name,
+        'slug': country.name.lower().replace(' ', '-'),  # fake slug for frontend if needed
+        # add any other fields you want
+    })

@@ -33,5 +33,5 @@ urlpatterns = [
     path('countries/<int:country_id>/tours/', CountryToursListView.as_view(), name='country-tours'),
     path('countries/<int:country_id>/cities/', CountryCitiesListView.as_view(), name='country-cities'),
     path('tours/<int:id>/', TourDetailView.as_view(), name='tour-detail'),
-    path('tourntrips/countries/', views.country_by_slug, name='country-by-slug'),
+    path('countries/', views.country_by_name, name='country-by-slug'),
     ]
